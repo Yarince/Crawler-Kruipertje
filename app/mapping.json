@@ -1,0 +1,20 @@
+#console command for creating elasticsearch index
+
+curl -XPUT 'localhost:9200/parser?pretty' -H 'Content-Type: application/json' -d'
+{
+  "mappings": {
+    "parser": {
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+        "@timestamp": {
+          "type": "date",
+          "index": "no",
+          "doc_values": true
+        }
+      }
+    }
+  }
+}
+'

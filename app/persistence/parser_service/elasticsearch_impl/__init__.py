@@ -1,0 +1,1 @@
+from persistence.parser_service.elasticsearch_impl.elasticsearch_service import ElasticsearchService
