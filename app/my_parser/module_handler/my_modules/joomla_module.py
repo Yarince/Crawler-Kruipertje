@@ -24,7 +24,6 @@ class JoomlaModule(Module):
         if self.__search_for_joomla(data):
             self.__get_joomla_theme(data)
 
-
     def __search_for_joomla(self, data):
         """
         This method will search if the current page uses joomla and add it to the attributes
@@ -33,10 +32,11 @@ class JoomlaModule(Module):
         """
         match = re.search(RegexProperties.Joomla.JOOMLA_SITE, data)
         if match:
-            self.attributes.update({'joomla' : True})
+            self.attributes.update({'joomla_found': True})
             return True
-        return False
-
+        else:
+            self.attributes.update({'joomla_found': False})
+            return False
 
     def __get_joomla_theme(self, data):
         """_
@@ -47,10 +47,6 @@ class JoomlaModule(Module):
         match = re.search(RegexProperties.Joomla.THEME, data)
         if match:
             self.attributes.update({'joomla_theme': match.group(1)})
-
-    def error(self, message):
-        # TODO custom exception
-        raise Exception(message)
 
     def is_found(self):
         return super().is_found()

@@ -15,7 +15,7 @@ class DomainParserTest(unittest.TestCase):
 
     def test_except_get_domain_name_corrupt_url(self):
         url = 'google'
-        expected_domain = ''
+        expected_domain = None
         actual_domain = self.sut.get_domain_name(url)
         self.assertEqual(expected_domain, actual_domain)
 

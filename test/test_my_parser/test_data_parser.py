@@ -3,7 +3,7 @@ from domain import Url
 from app.my_parser import DataParser
 from properties import Properties
 from test.mock import MockRedis, MockElastic
-from utils import HashService, DomainParser
+from utils import HashService, DomainParser, JsonHelper
 
 
 class DataParserTest(unittest.TestCase):
@@ -17,7 +17,6 @@ class DataParserTest(unittest.TestCase):
         self.sut = DataParser(self.url, self.redis, name, self.elastic)
 
     def test_get_items_from_redis_list(self):
-        expected = '{"joomla": true, "joomla_theme": "joomla", "url": "http://example.com"}'
         key = HashService.num_md5(DomainParser.get_domain_name(self.url.url_string))
         self.redis.set_list_value(key,
                                   '<meta name="description" content="Joomla! is the mobile-ready and user-friendly way '
@@ -27,8 +26,9 @@ class DataParserTest(unittest.TestCase):
                                   '</title><link href="/templates/joomla/images/apple-touch-icon-180x180.png" '
                                   'rel="apple-touch-icon" sizes="180x180" />')
         self.sut.parse()
-        self.assertEqual(expected, self.elastic.parser)
-        pass
+        s = str(JsonHelper.to_dict(self.elastic.parser))
+        print(s)
+        self.assertTrue("'joomla_found': True, 'joomla_theme': 'joomla'" in s)
 
     def test_parser_found_nothing(self):
         key = HashService.num_md5(DomainParser.get_domain_name(self.url.url_string))
@@ -46,5 +46,5 @@ class DataParserTest(unittest.TestCase):
                                   ' <br> <a href="../EenmaalAndermaal-static">EenmaalAndermaal - static</a> </font>'
                                   ' </h1> </body></html>')
         self.sut.parse()
-        self.assertEqual({}, self.elastic.parser)
+        self.assertTrue('True' not in self.elastic.parser)
         print(self.elastic.parser)

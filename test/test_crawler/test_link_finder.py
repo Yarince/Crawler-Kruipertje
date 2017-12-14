@@ -100,7 +100,3 @@ class LinkFinderTest(unittest.TestCase):
         Properties.BLACKLIST_FILE = 'Empty'
         with self.assertRaises(BlacklistNotFoundError):
             self.sut.handle_starttag('a', [('href', 'http://www.technovium.nl')])
-
-    def test_error(self):
-        with self.assertRaises(Exception):
-            self.sut.error("testError")

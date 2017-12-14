@@ -21,8 +21,11 @@ class DomainParser(object):
         try:
             results = DomainParser.get_sub_domain_name(url).split('.')
             return results[-2] + '.' + results[-1]
-        except:
+        except ValueError as e:
+            print('DomainParser ValueError occurred:{0}'.format(e.args))
             return ''
+        except IndexError as e:
+            print(e)
 
     @staticmethod
     def get_sub_domain_name(url):
@@ -31,5 +34,4 @@ class DomainParser(object):
         :param url: a url
         :return: the subdomain
         """
-        # TODO
         return urlparse(url).netloc

@@ -60,13 +60,35 @@ class UrlMySQLDAO(UrlDAO):
             if conn:
                 cursor.close()
                 conn.close()
+        return result
 
+    def get_urls(self):
+        """
+        This method will return all url's
+        :return: all url's in a set
+        """
+        conn = MySQLConnection().get_connection()
+        cursor = conn.cursor()
+        result = set()
+        try:
+            query = "SELECT HEX(id) FROM url"
+            cursor.execute(query)
+            for item in cursor.fetchall():
+                result.add(item[0])
+        except pymysql.Error as e:
+            code, msg = e.args
+            print("MySQL Error [{0}]: {1}".format(str(code), msg))
+        finally:
+            if conn:
+                cursor.close()
+                conn.close()
         return result
 
     def add_queue_url(self, url, shortened_url):
         """
         This method will add a url to the database
         :param url: a url
+        :param shortened_url: a shortened url
         :return: nothing
         """
         conn = MySQLConnection().get_connection()

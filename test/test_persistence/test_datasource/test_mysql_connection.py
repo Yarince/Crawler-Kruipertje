@@ -6,11 +6,9 @@ from database_properties import DatabaseProperties
 from persistence import MySQLConnection
 
 
-class MyTestCase(unittest.TestCase):
+class MySqlConnectionTest(unittest.TestCase):
     def setUp(self):
         self.sut = MySQLConnection()
-
-    # TODO Is this a unit test?
 
     def test_mysql_instance(self):
         expected = pymysql.connect(DatabaseProperties.HOST,

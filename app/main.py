@@ -2,7 +2,6 @@ import sys
 
 from crawler.crawler import Crawler
 from enums import DB, HTML, PARSER
-from my_exceptions import BlacklistNotFoundError
 from my_parser import Parser
 
 
@@ -12,7 +11,7 @@ def main():
     crawler = Crawler(DB.MYSQL, HTML.REDIS, parser)
 
     try:
-        crawler.start()
+        crawler.run()
     except KeyboardInterrupt:
         crawler.stop()
         sys.exit(0)

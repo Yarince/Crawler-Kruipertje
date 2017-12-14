@@ -18,13 +18,13 @@ class SpiderTest(TestCase):
 
     def test_add_links_to_queue(self):
         Properties.SPIDER_MAX_DEPTH = 0
-        self.sut.crawl()
+        self.sut.run()
         self.assertGreater(1, len(self.sut.deque))
 
     def test_http_error(self):
         Properties.SPIDER_MAX_DEPTH = 1
         self.sut = Spider(Url('http://example.com/', 1), 'testSpider', UrlDAOMock(), MockRedis())
-        self.sut.crawl()
+        self.sut.run()
         self.assertGreater(len(self.sut.crawled), 0)
 
 

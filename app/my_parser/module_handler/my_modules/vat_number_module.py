@@ -28,18 +28,16 @@ class VatNumberModule(Module):
         :param data: HTML code
         :return: Boolean
         """
-        for ch in [' ', '(', ')', '-', '.']:
-            data = data.replace(ch, '')
-
         match = re.findall(RegexProperties.VATNumber.VAT_NUMBER, data)
-        if match:
-            for vat_number in match:
-                if not 'VAT_numbers' in self.attributes:
-                    self.attributes.update({'VAT_numbers': {'0': vat_number}})
-                elif 'VAT_numbers' in self.attributes:
-                    count = len(self.attributes['VAT_numbers'])
-                    self.attributes['VAT_numbers'].update({str(count): vat_number})
+        for vat_number in match:
+            if 'vat_number' not in self.attributes:
+                self.attributes.update({'vat_found': True, 'vat_numbers': [vat_number]})
+            elif 'vat_number' in self.attributes:
+                if vat_number in self.attributes.get('vat_numbers'):
+                    continue
+                self.attributes['vat_numbers'].append(vat_number)
+        if not match:
+            self.attributes.update({'vat_found': False})
 
     def is_found(self):
         return super().is_found()
-

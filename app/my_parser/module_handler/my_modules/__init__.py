@@ -1,0 +1,4 @@
+from my_parser.module_handler.my_modules.joomla_module import JoomlaModule
+from my_parser.module_handler.my_modules.phone_number_module import PhoneNumberModule
+from my_parser.module_handler.my_modules.vat_number_module import VatNumberModule
+from my_parser.module_handler.my_modules.wordpress_module import WordPressModule

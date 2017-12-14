@@ -9,19 +9,19 @@ class PhoneNumberModuleTest(unittest.TestCase):
 
     def test_handle_html_data_when_phone_number_found(self):
         self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL140619562B01 • tel: 0627154566</p>')
-        expected = {'phone_numbers': {'0': '0627154566'}}
+        expected = {'phone_found': True, 'phone_numbers': ['0627154566']}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 
     def test_handle_html_data_when_incorrect_phone_number_found(self):
         self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL140619562B01 • tel: 062715434566</p>')
-        expected = {}
+        expected = {'phone_found': False}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 
     def test_handle_html_data_when_multiple_phone_numbers_found(self):
-        self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL140619562B01 • tel: 0627154566 tel2: 0345658575</p>')
-        expected = {'phone_numbers': {'1': '0345658575', '0': '0627154566'}}
+        self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL140619562B01 • tel: 0627154566 tel2: 09093565</p>')
+        expected = {'phone_found': True, 'phone_numbers': ['0627154566', '09093565']}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 
@@ -39,7 +39,7 @@ class PhoneNumberModuleTest(unittest.TestCase):
                                   ' <br> <a href="../EenmaalAndermaal-static">EenmaalAndermaal - static</a> </font>'
                                   ' </h1> </body></html>')
 
-        expected = {}
+        expected = {'phone_found': False}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 

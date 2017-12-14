@@ -17,4 +17,4 @@ class ElasticsearchConnection(object):
         if es.ping():
             return es
         else:
-            raise ValueError("Connection failed")
+            raise ValueError("Connection with ElasticSearch failed.")

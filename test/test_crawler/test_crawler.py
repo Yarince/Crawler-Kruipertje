@@ -3,8 +3,6 @@ import unittest
 from crawler import Crawler
 from enums import HTML, PARSER, DB
 from my_parser import Parser
-from properties import Properties
-from test.mock.url_dao_mock import UrlDAOMock
 
 
 class CrawlerTest(unittest.TestCase):

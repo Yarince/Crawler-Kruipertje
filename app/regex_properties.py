@@ -16,14 +16,13 @@ class RegexProperties:
 
     class PhoneNumber:
         # Check if there is no digit in front
-        # Netherlands country code or 0
-        # Net number
+        # Dutch country code or 0
+        START = r'(?<![0-9-%])\(?(?:\+31|0031|0|31)'
         # 06 numbers
+        MOBILE_NUMBER = r'(?:6\)?\.?-? ?[1-9][0-9]{7})'
         # company number
+        COMPANY_NUMBER = r'(?:90[09]|800)\)?(?:[1-9][0-9]{6}|[1-9][0-9]{3})|(?:8[58][1-9][0-9]{7})'
+        # Deprecated since 1.0
+        #   NET_NUMBER = r'(?:(?:(?:[1-9]{2}\)?[0-9]?\)?[1-9][0-9]{5})|(?:[1-9][0-9][1-9][0-9]{6})))'
         # Check if there is no digit behind
-        PHONE_NUMBER = r'(?<![0-9])' \
-                       r'(?:\+31|0031|0|31)' \
-                       r'(?:(?:(?:[1-9]{2}[0-9]?[1-9][0-9]{5})|(?:[1-9][0-9][1-9][0-9]{6}))|' \
-                       r'(?:6[1-9][0-9]{7})|' \
-                       r'(?:(?:90[09]|800)(?:[1-9][0-9]{6}|[1-9][0-9]{3})|(?:8[58][1-9][0-9]{7})))' \
-                       r'(?![0-9])'
+        END = r'(?![0-9])'

@@ -1,6 +1,6 @@
-#console command for creating elasticsearch index
+// console command for creating elasticsearch index
 
-curl -XPUT 'localhost:9200/parser?pretty' -H 'Content-Type: application/json' -d'
+curl -XPUT 'localhost:9200/parser?pretty' -H 'Content-Type: application/json' -d '
 {
   "mappings": {
     "parser": {

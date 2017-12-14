@@ -2,12 +2,14 @@ import socket
 import ssl
 import time
 from collections import deque
+from http.client import BadStatusLine, IncompleteRead
 from urllib import request as req
 from urllib.parse import urlsplit, urlunsplit
 from crawler.link_finder import LinkFinder
 from crawler.url_helper import URLHelper
+from enums.log import LOG
 from properties import Properties
-from utils import DomainParser, HashService
+from utils import DomainParser, HashService, MyLogger, Config
 
 
 class Spider:
@@ -27,14 +29,14 @@ class Spider:
         self.deque.append(base_url)
         self.name = name
 
-    def crawl(self):
+    def run(self):
         """
         Check if the queue is bigger than 0
         If it is execute __crawl_page
         :return: Nothing
         """
         # get url from queue
-        if len(self.deque) > 0:
+        while len(self.deque) > 0:
             url = self.deque.popleft()
             self.__crawl_page(url)
 
@@ -61,7 +63,7 @@ class Spider:
                 html = self.__get_html(request)
                 if len(html) > 0:
                     self.__save_html_to_redis(html)
-                    self.__add_links_to_queue(self.__gather_links(url, html))
+                    self.__add_links_to_queue(Spider.__gather_links(url, html))
                 self.crawled.add(url)
                 print(self.name, "is now crawling {}\n\t\t\t\t\t\t Queue {} | Crawled {} | Layer: {} | Duration: {}"
                       .format(str(url),
@@ -70,16 +72,16 @@ class Spider:
                               str(url.layer),
                               time.time() - start_time))
             except req.HTTPError as e:
-                print(self.name, "HTTP Error occurred [{0}]: {1} {2}".format(str(e.code), e.filename, e.reason))
+                MyLogger.log(LOG.SPIDER, "HTTP Error occurred [{0}]: {1} {2}".format(str(e.code), e.filename, e.reason))
             except req.URLError as e:
-                print(self.name, "URL Error occurred: {0}".format(e.reason))
+                MyLogger.log(LOG.SPIDER, "URL Error occurred: {0}".format(e.reason))
             except ssl.SSLError as e:
-                print(self.name, "SSL Error occurred: {0}".format(e))
+                MyLogger.log(LOG.SPIDER, "SSL Error occurred: {0}".format(e))
             except socket.timeout as e:
-                print(self.name, "Timeout occurred: {0}".format(e))
-        self.crawl()
+                MyLogger.log(LOG.SPIDER, "Timeout occurred: {0}".format(e))
 
-    def __gather_links(self, page_url, html):
+    @staticmethod
+    def __gather_links(page_url, html):
         """
         Creates a new LinkFinder instance with the page_url.
         LinkFinder takes html as input and returns all links found.
@@ -114,13 +116,17 @@ class Spider:
                 html_bytes = response.read()
                 html_string = html_bytes.decode("utf-8").strip()
         except UnicodeDecodeError as e:
-            print(self.name, "UnicodeDecodeError occurred: {0}".format(e))
+            MyLogger.log(LOG.SPIDER, "UnicodeDecodeError occurred: {0}".format(e))
         except socket.timeout as e:
-            print(self.name, "Timeout occurred: {0}".format(e))
+            MyLogger.log(LOG.SPIDER, "Timeout occurred: {0}".format(e))
         except ConnectionResetError as e:
-            print(self.name, "ConnectionResetError occurred [{0}]: {1}".format(str(e.errno), e.strerror))
+            MyLogger.log(LOG.SPIDER, "ConnectionResetError occurred [{0}]: {1}".format(str(e.errno), e.strerror))
         except ssl.CertificateError as e:
-            print(self.name, "SSL CertificateError: {0}".format(e.args))
+            MyLogger.log(LOG.SPIDER, "SSL CertificateError: {0}".format(e.args))
+        except BadStatusLine as e:
+            MyLogger.log(LOG.SPIDER, "BadStatusLine: {0}".format(e.args))
+        except IncompleteRead as e:
+            MyLogger.log(LOG.SPIDER, "IncompleteRead: {0}".format(e.args))
         return html_string
 
     def __add_links_to_queue(self, links):
@@ -151,28 +157,13 @@ class Spider:
         """
         split = urlsplit(url.url_string)
         clean_url = urlunsplit((split.scheme, split.netloc, "", "", ""))
-        # Todo faster
         shortened_url = DomainParser.get_domain_name(clean_url)
-        database_result = self.__handle_database_result(self.url_dao.get_url(shortened_url))
 
         # Check if url is already in database
-        if str(HashService.md5(shortened_url)).upper() not in database_result:
-            self.url_dao.add_queue_url(clean_url, shortened_url)
 
-    @staticmethod
-    def __handle_database_result(database_result):
-        """
-        This method will check if the result from the database is a list containing None.
-        If this is the case, then it will return an empty list, because None is not iterable
-        Else it will return the first tuple from the list
-        :param database_result: result from database query
-        :return: the adjusted database_result 
-        """
-        if database_result[0] is None:
-            database_result = []
-        else:
-            database_result = database_result[0]
-        return database_result
+        if str(HashService.md5(shortened_url)).upper() not in Config.urls:
+            self.url_dao.add_queue_url(clean_url, shortened_url)
+            Config.urls.add(str(HashService.md5(shortened_url)).upper())
 
     def __save_html_to_redis(self, html):
         """

@@ -14,7 +14,7 @@ class JoomlaModuleTest(unittest.TestCase):
                                   'Content Management" /><title>Joomla! The CMS Trusted By Millions for their Websites'
                                   '</title><link href="/templates/joomla/images/apple-touch-icon-180x180.png" '
                                   'rel="apple-touch-icon" sizes="180x180" />')
-        expected = {'joomla': True, 'joomla_theme': 'joomla'}
+        expected = {'joomla_found': True, 'joomla_theme': 'joomla'}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 
@@ -31,7 +31,7 @@ class JoomlaModuleTest(unittest.TestCase):
                                   ' <br> <a href="../EenmaalAndermaal">EenmaalAndermaal</a>'
                                   ' <br> <a href="../EenmaalAndermaal-static">EenmaalAndermaal - static</a> </font>'
                                   ' </h1> </body></html>')
-        expected = {}
+        expected = {'joomla_found': False}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 
@@ -43,8 +43,3 @@ class JoomlaModuleTest(unittest.TestCase):
         self.sut.attributes.update({'something': 'is now true'})
         result = self.sut.is_found()
         self.assertTrue(result)
-
-    def test_error(self):
-        # TODO: Custom exception maken
-        with self.assertRaises(Exception):
-            self.sut.error("testError")

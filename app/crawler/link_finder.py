@@ -30,6 +30,7 @@ class LinkFinder(HTMLParser):
         if tag == 'a':
             for attribute, value in attributes:
                 if attribute == 'href' and value is not None:
+                    value = value.strip()
                     self.__handle_value(value)
 
     def __handle_value(self, value):
@@ -44,7 +45,8 @@ class LinkFinder(HTMLParser):
                 elif self.__check_relative_url(value):
                     self.__parse_url(value)
 
-    def __check_in_blacklist(self, value):
+    @staticmethod
+    def __check_in_blacklist(value):
         """
         Check if the value is in the blacklist
         If not in the blacklist parse the url.
@@ -53,24 +55,26 @@ class LinkFinder(HTMLParser):
         """
         try:
             return BlacklistService.in_blacklist(value)
-        except BlacklistNotFoundError as e:
+        except BlacklistNotFoundError:
             raise
 
-    def __check_absolute_url(self, url):
+    @staticmethod
+    def __check_absolute_url(url):
         """
         This method will check if the given url is an absolute url
         :param url: A URL
         :return: Boolean
         """
-        return re.fullmatch(RegexProperties.LinkFinder.ABSOLUTE_URL, url.strip())
+        return re.fullmatch(RegexProperties.LinkFinder.ABSOLUTE_URL, url)
 
-    def __check_relative_url(self, url):
+    @staticmethod
+    def __check_relative_url(url):
         """
         This method will check if the given url is an absolute url
         :param url: A URL
         :return: Boolean
         """
-        return re.fullmatch(RegexProperties.LinkFinder.RELATIVE_URL, url.strip())
+        return re.fullmatch(RegexProperties.LinkFinder.RELATIVE_URL, url)
 
     def __handle_absolute_url(self, url):
         """
@@ -78,7 +82,7 @@ class LinkFinder(HTMLParser):
         :param url: A URL
         :return: nothing
         """
-        if not parse.urlparse(url).scheme:
+        if not re.match('http(s:|:)//', url):
             url = "http://" + url
         self.__parse_url(url)
 
@@ -90,7 +94,3 @@ class LinkFinder(HTMLParser):
         """
         parsed_url = Url(parse.urljoin(self.page_url.url_string, url), self.page_url.layer + 1)
         self.links.add(parsed_url)
-
-    def error(self, message):
-        # TODO custom exception
-        raise Exception(message)

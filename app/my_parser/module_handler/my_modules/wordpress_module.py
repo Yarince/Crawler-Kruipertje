@@ -32,13 +32,16 @@ class WordPressModule(Module):
         """
         match = re.search(RegexProperties.WordPress.THEME, data)
         if match:
-            self.attributes.update({'wordpress': True, 'wordpress_theme': match.group(1)})
+            self.attributes.update({'wordpress_found': True, 'wordpress_theme': match.group(1)})
             return True
-        return False
+        else:
+            self.attributes.update({'wordpress_found': False})
+            return False
 
     def __get_wordpress_version(self, data):
         """
-        This method check the wordpress version of the current page. It will than add the version to the attributes attribute
+        This method check the wordpress version of the current page.
+        It will than add the version to the attributes attribute.
         :param data: HTML code
         :return: nothing
         """
@@ -46,10 +49,5 @@ class WordPressModule(Module):
         if match:
             self.attributes.update({'wordpress_version': match.group(1)})
 
-    def error(self, message):
-        # TODO custom exception
-        raise Exception(message)
-
     def is_found(self):
         return super().is_found()
-

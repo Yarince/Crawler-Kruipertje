@@ -18,13 +18,14 @@ class DataParser:
         """
         print(self.name, "is now parsing: {0}".format(self.url))
         modules_info = self.__loop_through_modules()
-        if len(modules_info) > 0:
-            time = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
-            modules_info.update({"url": self.url.url_string})
-            modules_info.update({"@timestamp": time + "Z"})
-            self.__save_to_database(JsonHelper.to_json(modules_info))
-        else:
-            print(self.name, "found nothing.")
+
+        modules_info.update({"url": self.url.url_string})
+        time = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3]
+        modules_info.update({"@timestamp": time})
+
+        json = JsonHelper.to_json(modules_info)
+
+        self.__save_to_database(json)
 
     def __get_items_from_redis_list(self):
         """
@@ -56,7 +57,7 @@ class DataParser:
         for page in self.__get_items_from_redis_list():
             mod_instance.handle_html_data(str(page))
             if not mod_instance.run_all_pages and mod_instance.is_found():
-                return True
+                break
 
     @staticmethod
     def __get_available_modules():
@@ -83,6 +84,5 @@ class DataParser:
         :param json: the json to be stored in the database
         :return: Nothing
         """
-        id = HashService.num_md5(self.url.url_string)
-        print(self.name, "found: {0}".format(json))
-        self.parser_service.update_item(id, json)
+        data_id = HashService.num_md5(self.url.url_string)
+        self.parser_service.update_item(data_id, json)

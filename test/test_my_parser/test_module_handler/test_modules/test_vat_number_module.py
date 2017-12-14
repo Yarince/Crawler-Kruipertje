@@ -9,19 +9,21 @@ class VATNumberModuleTest(unittest.TestCase):
 
     def test_handle_html_data_when_vat_number_found(self):
         self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL140619562B01 • IBAN NL21 ABNA 0532 4840 10</p>')
-        expected = {'VAT_numbers': {'0': 'NL140619562B01'}}
-        actual = self.sut.attributes
-        self.assertDictEqual(expected, actual)
-
-    def test_handle_html_data_when_vat_number_with_points_found(self):
-        self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL1406.19.562.B.01 • IBAN NL21 ABNA 0532 4840 10</p>')
-        expected = {'VAT_numbers': {'0': 'NL140619562B01'}}
+        expected = {'vat_found': True, 'vat_numbers': ['NL140619562B01']}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 
     def test_handle_html_data_when_multiple_vat_numbers_found(self):
-        self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL140619562B01 • NL142319562B02 • IBAN NL21 ABNA 0532 4840 10</p>')
-        expected = {'VAT_numbers': {'0':'NL140619562B01', '1': 'NL142319562B02'}}
+        self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL140619562B01 • NL142319562B02 • '
+                                  'IBAN NL21 ABNA 0532 4840 10</p>')
+        expected = {'vat_found': True, 'vat_numbers': ['NL142319562B02']}
+        actual = self.sut.attributes
+        self.assertDictEqual(expected, actual)
+
+    def test_handle_html_data_when_duplicate_vat_numbers_found(self):
+        self.sut.handle_html_data('<p>KvK 20091741 • btw&nbsp;NL140619562B01 • NL140619562B01 • NL140619562B01 •'
+                                  'IBAN NL21 ABNA 0532 4840 10</p>')
+        expected = {'vat_found': True, 'vat_numbers': ['NL140619562B01']}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 
@@ -39,7 +41,7 @@ class VATNumberModuleTest(unittest.TestCase):
                                   ' <br> <a href="../EenmaalAndermaal-static">EenmaalAndermaal - static</a> </font>'
                                   ' </h1> </body></html>')
 
-        expected = {}
+        expected = {'vat_found': False}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 

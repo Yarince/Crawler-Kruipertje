@@ -17,6 +17,6 @@ class ClassReturner:
             mod = importlib.import_module(package)
             return getattr(mod, kls)
         except (AttributeError, ModuleNotFoundError) as e:
-            print(kls, "error: {0}".format(e.msg))
+            print(kls, " NotFoundError: {0}".format(e.msg))
             return None
 

@@ -4,5 +4,5 @@ setup(
     name='Crawler',
     version='1.0',
     package_dir={' ': 'app'},
-    install_requires=['pymysql', 'redis', 'elasticsearch']
+    install_requires=['pymysql', 'redis', 'elasticsearch', 'structlog']
 )

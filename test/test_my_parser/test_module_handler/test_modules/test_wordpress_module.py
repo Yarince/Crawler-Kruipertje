@@ -11,17 +11,12 @@ class WordPressModuleTest(unittest.TestCase):
     def setUp(self):
         self.sut = WordPressModule()
 
-    def test_error(self):
-        # TODO: Custom exception maken
-        with self.assertRaises(Exception):
-            self.sut.error("testError")
-
     def test_handle_html_data_when_wordpress_site(self):
         self.sut.handle_html_data('<link rel="shortcut icon" type="image/x-icon" '
                                   'href="http://demo.qodeinteractive.com/bridge/'
                                   'wp-content/themes/bridge/img/favicon.ico"> '
                                   '<meta name="generator" content="WordPress 4.7.5" />')
-        expected = {'wordpress': True, 'wordpress_theme': 'bridge', 'wordpress_version': '4.7.5'}
+        expected = {'wordpress_found': True, 'wordpress_theme': 'bridge', 'wordpress_version': '4.7.5'}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 
@@ -38,7 +33,7 @@ class WordPressModuleTest(unittest.TestCase):
                                   ' <br> <a href="../EenmaalAndermaal">EenmaalAndermaal</a>'
                                   ' <br> <a href="../EenmaalAndermaal-static">EenmaalAndermaal - static</a> </font>'
                                   ' </h1> </body></html>')
-        expected = {}
+        expected = {'wordpress_found': False}
         actual = self.sut.attributes
         self.assertDictEqual(expected, actual)
 

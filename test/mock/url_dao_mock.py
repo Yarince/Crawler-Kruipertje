@@ -10,9 +10,12 @@ class UrlDAOMock:
     def get_crawled_urls(self):
         return self.crawled
 
-    def get_url(self, url):
+    @staticmethod
+    def get_url(url):
         return url
 
+    def get_urls(self):
+        return self.queue
     def add_queue_url(self, url):
         self.queue.append(url)
 

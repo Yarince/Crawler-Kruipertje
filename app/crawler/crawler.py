@@ -1,12 +1,15 @@
-from queue import Queue, Empty
+from datetime import datetime
+from queue import Queue
 import queue
 import sys
+import time
 from crawler.spider import Spider
 from crawler.url_helper import URLHelper
+from enums.log import LOG
 from my_exceptions import BlacklistNotFoundError, MyThreadError
 from persistence import UrlDAOFactory, HTMLServiceFactory
 from properties import Properties
-from utils import MyThread
+from utils import MyThread, MyLogger, HashService, Config
 
 
 class Crawler:
@@ -25,6 +28,9 @@ class Crawler:
         self.parser = parser
         self.__threads = []
         self.bucket = Queue()
+        start_time = time.time()
+        Config.urls = self.url_dao.get_urls()
+        print('Loading urls - duration: {0}'.format(time.time() - start_time))
 
     def create_workers(self):
         """
@@ -44,7 +50,6 @@ class Crawler:
         print("All threads stopped working.")
         sys.exit()
 
-
     def work(self, thread_name, url_dao):
         """
         This method is assigned to threads.
@@ -57,7 +62,12 @@ class Crawler:
         try:
             while True:
                 url = self.queue.get()
-                Spider(url, thread_name, url_dao, self.redis).crawl()
+                url_id = HashService.num_md5(url.url_string)
+                timestamp = datetime.now().strftime('%Y-%m-%dT%H:%M:%S.%f')[:-3] + "Z"
+                MyLogger.log(LOG.CRAWLER, "url_id=" + str(url_id) +
+                                          " url=" + str(url.url_string) +
+                                          " @timestamp=" + timestamp)
+                Spider(url, thread_name, url_dao, self.redis).run()
                 self.crawled.add(url)
                 self.parser.add_link_to_queue(url)
                 self.parser.start()
@@ -67,25 +77,22 @@ class Crawler:
                 self.queue.task_done()
             raise MyThreadError
 
-    def start(self):
+    def run(self):
         """
         Call method create_workers and then call the crawl method to fill the queue
         :return: Nothing
         """
         self.create_workers()
-        self.__crawl()
-
-    def __crawl(self):
-        """
-        Check if there are items in the queue.
-        If that's true show all items in the string and call __create_jobs
-        :return: Nothing
-        """
         self.__check_bucket_state()
-        db_urls = self.url_dao.get_queue_urls()
-        if len(db_urls) > 0 and len(set(db_urls) ^ self.crawled) is not 0:
-            print("Crawler has {0} links in queue!".format(str(len(db_urls))))
+        _, urls_in_queue = self.new_urls_in_queue()
+        while urls_in_queue:
+            amount, urls_in_queue = self.new_urls_in_queue()
+            print("Crawler has {0} links in queue!".format(amount))
             self.__create_jobs()
+
+    def new_urls_in_queue(self):
+        db_urls = self.url_dao.get_queue_urls()
+        return len(db_urls), len(db_urls) > 0 and len(set(db_urls) ^ self.crawled) is not 0
 
     def __create_jobs(self):
         """
@@ -96,7 +103,6 @@ class Crawler:
             if not URLHelper.url_in_urlset(url, self.crawled):
                 self.queue.put(url)
         self.queue.join()
-        self.__crawl()
 
     def __check_bucket_state(self):
         try:
@@ -105,7 +111,6 @@ class Crawler:
             pass
         else:
             exc_type, exc_obj, exc_trace = exc
-            # deal with the exception
             print(exc_type, exc_obj)
             print(exc_trace)
             sys.exit()
